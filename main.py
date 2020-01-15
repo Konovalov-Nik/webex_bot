@@ -13,14 +13,23 @@ import os
 APP = Flask(__name__)
 BOT_TOKEN = None
 
+ACCOUNTS = None
+
+
 def main():
     global BOT_TOKEN
     BOT_TOKEN = os.environ.get("BOT_TOKEN", None)
     if BOT_TOKEN is None:
+        print("No token specified in the env. Exiting.")
         exit(1)
+
+    if not load_account_credentials():
+        print("Could not load accounts. Exiting.")
+        exit(2)
 
     http_server = WSGIServer(('', 5001), APP)
     http_server.serve_forever()
+
 
 @APP.route("/bot", methods=['POST'])
 def endpoint():
@@ -129,5 +138,21 @@ def request_reservation():
 
     return resp
 '''
+
+
+def load_account_credentials():
+    try:
+        f = open("accounts.json", "r")
+        contents = f.readlines()
+
+        global ACCOUNTS
+        ACCOUNTS = json.loads(contents)
+
+    except:
+        return False
+
+    return True
+
+
 if __name__ == "__main__":
     main()
